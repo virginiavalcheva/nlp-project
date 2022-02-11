@@ -1,4 +1,5 @@
 import re
+import spacy
 from nltk.tokenize import word_tokenize
 
 sentences = ["Каква е сложността на алгоритъма ЙАК?", "От къде започва тъсенето на термин в дърво за търсене?"]
@@ -23,4 +24,6 @@ for cleaned_sentence in cleaned_sentences :
 		if token.lower() not in stop_words:
 			filtered_sentence.append(token)
 	print(filtered_sentence)
+    
+
 
