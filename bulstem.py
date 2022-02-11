@@ -1,5 +1,4 @@
 '''
-Implementation author: Peio Popov <peio@peio.org>
 Algorithm author: Preslav Nakov <nakov@cs.berkeley.edu>, UC Berkeley
 Paper: BulStem: Inflectional Stemmer For Bulgarian http://people.ischool.berkeley.edu/~nakov/bulstem/
 '''
