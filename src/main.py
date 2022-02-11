@@ -1,12 +1,21 @@
-import re
+import re, json
 from nltk.tokenize import word_tokenize
 
-sentences = ["Каква е сложността на алгоритъма ЙАК?", "От къде започва тъсенето на термин в дърво за търсене?"]
+#parse json file
+json_file = open("../resources/questions.json", "r", encoding="utf-8")
+data = json.load(json_file)
+json_file.close()
 
-cleaned_sentences = []
-for sentence in sentences :
-	cleaned_sentence = re.sub(r'[^\w\s\-]', '', sentence)
-	cleaned_sentences.append(cleaned_sentence)
+questions = []
+answers = []
+for obj in data:
+	questions.append(obj)
+	answers.append(data[obj])
+
+cleaned_questions = []
+for question in questions :
+	cleaned_question = re.sub(r'[^\w\s\-]', '', question)
+	cleaned_questions.append(cleaned_question)
 
 #read stop words from file
 file = open("../resources/bulgarianST.txt", "r", encoding="utf-8")
@@ -15,12 +24,12 @@ stop_words = file_txt.split("\n")
 file.close()
 
 #extract stop words from question
-for cleaned_sentence in cleaned_sentences : 
-	tokens = word_tokenize(cleaned_sentence)
+for cleaned_question in cleaned_questions : 
+	tokens = word_tokenize(cleaned_question)
 
-	filtered_sentence = []
+	filtered_question = []
 	for token in tokens: 
 		if token.lower() not in stop_words:
-			filtered_sentence.append(token)
-	print(filtered_sentence)
+			filtered_question.append(token)
+	print(filtered_question)
 
