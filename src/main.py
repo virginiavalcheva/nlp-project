@@ -5,7 +5,7 @@ from tfidf import get_closest_document
 def get_stop_words():
 	stop_words_file = open("../resources/bulgarianST.txt", "r", encoding="utf-8")
 	stop_words_txt = stop_words_file.read()
-	stop_words_file.close
+	stop_words_file.close()
 
 	stop_words = stop_words_txt.split("\n")
 	return stop_words
