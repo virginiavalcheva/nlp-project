@@ -95,7 +95,8 @@ if __name__ == "__main__":
 		# closest_document_words = filter_question_words(closest_document, stop_words)
 		closest_document = closest_document.replace('.', '')
 		closest_document_words = closest_document.split(" ")
-
+		if c == 5:
+			print(closest_document)
 		answers_found = []
 		for answer in answers:
 			if check_if_answer_appears_in_document_words(answer, closest_document):
@@ -115,6 +116,7 @@ if __name__ == "__main__":
 			else:
 				print(answers_found[0])
 		else:
+			
 			print("No answer found!")
 		print("\n\n")
 		c += 1
