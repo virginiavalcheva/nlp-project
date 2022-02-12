@@ -2,7 +2,7 @@ import re
 from nltk.tokenize import word_tokenize
 from pos_tagger import get_words_from_tuples
 from pos_tagger import sort_by_weight
-from pos_tagger import transform_sentenc_to_POS
+from pos_tagger import transform_sentence_to_POS
 from pos_tagger import get_weight
 from pos_tagger import get_word
 
@@ -50,9 +50,9 @@ def get_sentence_index(sentence_pair):
     return sentence_pair[0]
     
 #return the right answer
-def return_right_answer(answers, file_name, pos_tagged_sentences) :
-    sorted_tuples = sort_by_weight(pos_tagged_sentences)
-    file_content = get_file_content(file_name)
+def return_right_answer(answers, file_content, pos_tagged_sentence) :
+    sorted_tuples = sort_by_weight(pos_tagged_sentence)
+   # file_content = get_file_content(file_name)
     sentences = split_text(file_content)
     sentences_weight = get_sentences_weight(sentences, sorted_tuples)
     sorted_sentences = sort_sentences_by_weight(sentences_weight)

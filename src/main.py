@@ -2,123 +2,93 @@ import re, json, io
 
 from nltk.tokenize import word_tokenize
 from tfidf import get_closest_documents_indexes
-from posTagger import transformSentenceToPOS
+from pos_tagger import transform_sentence_to_POS
+from searcher_in_doc import return_right_answer
 from constants import RESOURCE_FILENAME, QESTIONS_PATH_TO_FILE
 
 def get_stop_words():
-	stop_words_file = open("../resources/bulgarianST.txt", "r", encoding="utf-8")
-	stop_words_txt = stop_words_file.read()
-	stop_words_file.close()
-	stop_words = stop_words_txt.split("\n")
-	return stop_words
+    stop_words_file = open("../resources/bulgarianST.txt", "r", encoding="utf-8")
+    stop_words_txt = stop_words_file.read()
+    stop_words_file.close()
+    stop_words = stop_words_txt.split("\n")
+    return stop_words
 
 def clean_question(question):
-	return re.sub(r'[^\w\s\-]', '', question)
+    return re.sub(r'[^\w\s\-]', '', question)
 
 def filter_question_words(question, stop_words):
-	tokens = word_tokenize(question)
-	filtered_question_words = []
-	for token in tokens:
-		if token.lower() not in stop_words:
-			filtered_question_words.append(token)
-	return filtered_question_words
+    tokens = word_tokenize(question)
+    filtered_question_words = []
+    for token in tokens:
+        if token.lower() not in stop_words:
+            filtered_question_words.append(token)
+    return filtered_question_words
 
 def print_question_with_answers(question, answers, question_number):
-	print("Въпрос %s: %s" % (question_number, question))
-	print("A) %s" % answers[0])
-	print("B) %s" % answers[1])
-	print("C) %s" % answers[2])
-	print("D) %s" % answers[3])
-	print("-------------------------------------------------")
+    print("Въпрос %s: %s" % (question_number, question))
+    print("A) %s" % answers[0])
+    print("B) %s" % answers[1])
+    print("C) %s" % answers[2])
+    print("D) %s" % answers[3])
+    print("-------------------------------------------------")
 
 def check_if_answer_appears_in_document_words(answer, document):
-	return answer in document
+    return answer in document
 
-
-def find_answer_using_tdfidf(documents, closest_documents_indexes, answers):
-	answer_to_return = None
-	for closest_document_index in closest_documents_indexes:
-		closest_document = documents[closest_document_index]
-		closest_document = closest_document.replace('.', '')
-		closest_document_words = closest_document.split(" ")
-		answers_found = []
-		for answer in answers:
-			if check_if_answer_appears_in_document_words(answer, closest_document):
-				answers_found.append(answer)
-		if answers_found:
-			# if more than one of the answers appear in the closest document
-			if len(answers_found) > 1:
-				answers_found_as_whole_words = []
-				# check if the answers found appear as whole words or not
-				for answer_found in answers_found:
-					if check_if_answer_appears_in_document_words(answer_found, closest_document_words):
-						answers_found_as_whole_words.append(answer_found)
-				if answers_found_as_whole_words:
-					# more than one answers appear
-					if len(answers_found_as_whole_words) > 1:
-						# print("More than one answers found")
-						pass
-					else:
-						answer_to_return = answers_found_as_whole_words[0]
-						# print(answers_found_as_whole_words[0])
-
-			else:
-				answer_to_return = answers_found[0]
-	return answer_to_return
-
+def find_answer_using_tfidf(documents, closest_documents_indexes, question, answers):
+    answer_to_return = None
+    for closest_document_index in closest_documents_indexes:
+        closest_document = documents[closest_document_index]
+        closest_document_words = closest_document.split(" ")
+        pos_tagged_sentence = transform_sentence_to_POS(question)
+        answer = return_right_answer(answers, closest_document, pos_tagged_sentence)
+        if(answer):
+            return answer
+    return answer_to_return    
 
 def read_resource_from_file(resource_name):
-	resource_as_file = io.open(resource_name, mode="r", encoding="utf-8")
-	resource_as_string = resource_as_file.read()
-	return resource_as_string
-
+    resource_as_file = io.open(resource_name, mode="r", encoding="utf-8")
+    resource_as_string = resource_as_file.read()
+    return resource_as_string
 
 def split_resource_in_documents_by_headings(resource):
-	documents = re.split(r'\b[0-9][0-9]?\s[а-яА-Я\s,]+\n', resource)
-	return documents
+    documents = re.split(r'\b[0-9][0-9]?\s[а-яА-Я\s,]+\n', resource)
+    return documents
 
 def read_questions_from_json():
-	json_file = open(QESTIONS_PATH_TO_FILE, "r", encoding = "utf-8")
-	data = json.load(json_file)
-	json_file.close()
-	return data
-
+    json_file = open(QESTIONS_PATH_TO_FILE, "r", encoding = "utf-8")
+    data = json.load(json_file)
+    json_file.close()
+    return data
 
 def main():
-	resource_as_string = read_resource_from_file(RESOURCE_FILENAME)
-	documents = split_resource_in_documents_by_headings(resource_as_string)
-	questions_data = read_questions_from_json()
-	stop_words = get_stop_words()
+    resource_as_string = read_resource_from_file(RESOURCE_FILENAME)
+    documents = split_resource_in_documents_by_headings(resource_as_string)
+    questions_data = read_questions_from_json()
+    stop_words = get_stop_words()
 
-	question_counter = 1
-	for question in questions_data:
-		answers = questions_data[question]
-		print_question_with_answers(question, answers, question_counter)
-		cleaned_question = clean_question(question)
-		filtered_question_words = filter_question_words(cleaned_question, stop_words)
-		filtered_question_string = " ".join(filtered_question_words)
+    question_counter = 1
+    for question in questions_data:
+        answers = questions_data[question]
+        print_question_with_answers(question, answers, question_counter)
+        cleaned_question = clean_question(question)
+        filtered_question_words = filter_question_words(cleaned_question, stop_words)
+        filtered_question_string = " ".join(filtered_question_words)
 
-		closest_documents_indexes = get_closest_documents_indexes(documents, filtered_question_string)
-		print(closest_documents_indexes)
-		# tdidf usage
-		answer = find_answer_using_tdfidf(documents, closest_documents_indexes, answers)
-		if answer:
-			print(answer)
-		else:
-			print("No answer found!")
-			pass
-			# #pos-tagging & stemming:
-			# print(filtered_question_string)
-			# posed_question = transformSentenceToPOS(filtered_question_string)
-			# print(posed_question)
-		print("\n\n")
-		question_counter += 1
-		print(documents[closest_documents_indexes[0]])
-		# break
-
+        closest_documents_indexes = get_closest_documents_indexes(documents, filtered_question_string)
+        print(closest_documents_indexes)
+        # tfidf usage
+        answer = find_answer_using_tfidf(documents, closest_documents_indexes, filtered_question_string, answers)
+        if answer:
+            print(answer)
+        else:
+            print("No answer found!")
+            pass
+        print("\n\n")
+        question_counter += 1
 
 if __name__ == "__main__":
-	main()
+    main()
 
 
 
