@@ -42,7 +42,6 @@ def find_answer_using_tfidf(documents, closest_documents_indexes, question, answ
     answer_to_return = None
     for closest_document_index in closest_documents_indexes:
         closest_document = documents[closest_document_index]
-        # closest_document_words = closest_document.split(" ")
         pos_tagged_sentence = transform_sentence_to_POS(question)
         answer = return_right_answer(answers, closest_document, pos_tagged_sentence)
         if answer:
