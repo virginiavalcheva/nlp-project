@@ -1,8 +1,3 @@
-'''
-Algorithm author: Preslav Nakov <nakov@cs.berkeley.edu>, UC Berkeley
-Paper: BulStem: Inflectional Stemmer For Bulgarian http://people.ischool.berkeley.edu/~nakov/bulstem/
-'''
-
 import codecs
 import pickle
 import re
@@ -69,8 +64,6 @@ def stem(word):
 		word_reminder = wordLen - c
 		
 		'Check if there is a stem matching the reminder of the word'
-		# print(stem)
-		# print(StemmingRules[word_reminder])
 		if stem in StemmingRules[word_reminder]:
 			'Return stemmed word'
 			return word[:c]+StemmingRules[word_reminder][stem]

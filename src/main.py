@@ -1,18 +1,9 @@
-import re, json, glob, io
+import re, json, io
 
-import nltk
-import ssl
-
-try:
-    _create_unverified_https_context = ssl._create_unverified_context
-except AttributeError:
-    pass
-else:
-    ssl._create_default_https_context = _create_unverified_https_context
-
-nltk.download('punkt')
 from nltk.tokenize import word_tokenize
-from tfidf import get_closest_document
+from tfidf import get_closest_documents_indexes
+from posTagger import transformSentenceToPOS
+from constants import RESOURCE_FILENAME, QESTIONS_PATH_TO_FILE
 
 def get_stop_words():
 	stop_words_file = open("../resources/bulgarianST.txt", "r", encoding="utf-8")
@@ -23,25 +14,6 @@ def get_stop_words():
 
 def clean_question(question):
 	return re.sub(r'[^\w\s\-]', '', question)
-
-# def get_cleaned_questions(questions):
-# 	cleaned_questions = []
-# 	for question in questions:
-# 		cleaned_question = re.sub(r'[^\w\s\-]', '', question)
-# 		cleaned_questions.append(cleaned_question)
-# 	return cleaned_questions
-
-# def get_filtered_questions(questions):
-# 	filtered_questions = []
-# 	stop_words = get_stop_words()
-# 	for question in questions:
-# 		tokens = word_tokenize(question)
-# 		filtered_question = []
-# 		for token in tokens:
-# 			if token.lower() not in stop_words:
-# 				filtered_question.append(token)
-# 		filtered_questions.append(filtered_question)
-# 	return filtered_questions
 
 def filter_question_words(question, stop_words):
 	tokens = word_tokenize(question)
@@ -62,62 +34,89 @@ def print_question_with_answers(question, answers, question_number):
 def check_if_answer_appears_in_document_words(answer, document):
 	return answer in document
 
-if __name__ == "__main__":
-	f = io.open("../resources/IR_lecture_notes.txt", mode="r", encoding="utf-8")
-	s = f.read()
 
-	l = re.split(r'\b[0-9][0-9]?\s[а-яА-Я\s,]+\n', s)
-
-	# file_paths = glob.glob("../resources/files/text*.txt")
-	# documents = []
-	# for path in file_paths:
-	# 	file = open(path, "r", encoding="utf-8")
-	# 	file_txt = file.read()
-	# 	documents.append(file_txt)
-
-	json_file = open("../resources/questions.json", "r", encoding="utf-8")
-	data = json.load(json_file)
-	json_file.close()
-
-	questions = []
-	stop_words = get_stop_words()
-	# answers = []
-	c = 1
-	for obj in data:
-		answers = data[obj]
-		print_question_with_answers(obj, answers, c)
-		cleaned_question = clean_question(obj)
-		filtered_question_words = filter_question_words(cleaned_question, stop_words)
-
-		# print(filtered_question_words)
-		# print(" ".join(filtered_question_words))
-		closest_document = get_closest_document(l, " ".join(filtered_question_words))
-		# closest_document_words = filter_question_words(closest_document, stop_words)
+def find_answer_using_tdfidf(documents, closest_documents_indexes, answers):
+	answer_to_return = None
+	for closest_document_index in closest_documents_indexes:
+		closest_document = documents[closest_document_index]
 		closest_document = closest_document.replace('.', '')
 		closest_document_words = closest_document.split(" ")
-		if c == 5:
-			print(closest_document)
 		answers_found = []
 		for answer in answers:
 			if check_if_answer_appears_in_document_words(answer, closest_document):
 				answers_found.append(answer)
-
 		if answers_found:
+			# if more than one of the answers appear in the closest document
 			if len(answers_found) > 1:
 				answers_found_as_whole_words = []
+				# check if the answers found appear as whole words or not
 				for answer_found in answers_found:
 					if check_if_answer_appears_in_document_words(answer_found, closest_document_words):
 						answers_found_as_whole_words.append(answer_found)
 				if answers_found_as_whole_words:
+					# more than one answers appear
 					if len(answers_found_as_whole_words) > 1:
-						print("More than one answers found")
+						# print("More than one answers found")
+						pass
 					else:
-						print(answers_found_as_whole_words[0])
+						answer_to_return = answers_found_as_whole_words[0]
+						# print(answers_found_as_whole_words[0])
+
 			else:
-				print(answers_found[0])
+				answer_to_return = answers_found[0]
+	return answer_to_return
+
+
+def read_resource_from_file(resource_name):
+	resource_as_file = io.open(resource_name, mode="r", encoding="utf-8")
+	resource_as_string = resource_as_file.read()
+	return resource_as_string
+
+
+def split_resource_in_documents_by_headings(resource):
+	documents = re.split(r'\b[0-9][0-9]?\s[а-яА-Я\s,]+\n', resource)
+	return documents
+
+def read_questions_from_json():
+	json_file = open(QESTIONS_PATH_TO_FILE, "r", encoding = "utf-8")
+	data = json.load(json_file)
+	json_file.close()
+	return data
+
+
+def main():
+	resource_as_string = read_resource_from_file(RESOURCE_FILENAME)
+	documents = split_resource_in_documents_by_headings(resource_as_string)
+	questions_data = read_questions_from_json()
+	stop_words = get_stop_words()
+
+	question_counter = 1
+	for question in questions_data:
+		answers = questions_data[question]
+		print_question_with_answers(question, answers, question_counter)
+		cleaned_question = clean_question(question)
+		filtered_question_words = filter_question_words(cleaned_question, stop_words)
+		filtered_question_string = " ".join(filtered_question_words)
+
+		closest_documents_indexes = get_closest_documents_indexes(documents, filtered_question_string)
+
+		# tdidf usage
+		answer = find_answer_using_tdfidf(documents, closest_documents_indexes, answers)
+		if answer:
+			print(answer)
 		else:
-			
-			print("No answer found!")
+			#pos-tagging & stemming:
+			print(filtered_question_string)
+			posed_question = transformSentenceToPOS(filtered_question_string)
+			print(posed_question)
 		print("\n\n")
-		c += 1
+		question_counter += 1
+
+
+if __name__ == "__main__":
+	main()
+
+
+
+
 
