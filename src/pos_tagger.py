@@ -2,8 +2,7 @@ import spacy
 
 #pos-tagging
 nlp = spacy.load("ru_core_news_sm")
-#my_question = 'Каква e сложността на алгоритъма ЙАК?'
-def transform_sentenc_to_POS(my_question):
+def transform_sentence_to_POS(my_question):
     doc = nlp(my_question)
     result = []
     for token in doc:
