@@ -1,10 +1,13 @@
-import re, json, io
+import io
+import json
+import re
 
 from nltk.tokenize import word_tokenize
 from tfidf import get_closest_documents_indexes
 from pos_tagger import transform_sentence_to_POS
 from searcher_in_doc import return_right_answer
 from constants import RESOURCE_FILENAME, QESTIONS_PATH_TO_FILE
+from bulstem import stem_word
 
 def get_stop_words():
     stop_words_file = open("../resources/bulgarianST.txt", "r", encoding="utf-8")
@@ -39,10 +42,10 @@ def find_answer_using_tfidf(documents, closest_documents_indexes, question, answ
     answer_to_return = None
     for closest_document_index in closest_documents_indexes:
         closest_document = documents[closest_document_index]
-        closest_document_words = closest_document.split(" ")
+        # closest_document_words = closest_document.split(" ")
         pos_tagged_sentence = transform_sentence_to_POS(question)
         answer = return_right_answer(answers, closest_document, pos_tagged_sentence)
-        if(answer):
+        if answer:
             return answer
     return answer_to_return    
 
@@ -73,18 +76,17 @@ def main():
         print_question_with_answers(question, answers, question_counter)
         cleaned_question = clean_question(question)
         filtered_question_words = filter_question_words(cleaned_question, stop_words)
-        filtered_question_string = " ".join(filtered_question_words)
+        question_words_stemmed = [stem_word(i) for i in filtered_question_words]
+        filtered_question_string = " ".join(question_words_stemmed)
 
         closest_documents_indexes = get_closest_documents_indexes(documents, filtered_question_string)
-        print(closest_documents_indexes)
         # tfidf usage
         answer = find_answer_using_tfidf(documents, closest_documents_indexes, filtered_question_string, answers)
         if answer:
             print(answer)
         else:
             print("No answer found!")
-            pass
-        print("\n\n")
+        print("\n")
         question_counter += 1
 
 if __name__ == "__main__":
