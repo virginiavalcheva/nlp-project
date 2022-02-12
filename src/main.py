@@ -99,18 +99,22 @@ def main():
 		filtered_question_string = " ".join(filtered_question_words)
 
 		closest_documents_indexes = get_closest_documents_indexes(documents, filtered_question_string)
-
+		print(closest_documents_indexes)
 		# tdidf usage
 		answer = find_answer_using_tdfidf(documents, closest_documents_indexes, answers)
 		if answer:
 			print(answer)
 		else:
-			#pos-tagging & stemming:
-			print(filtered_question_string)
-			posed_question = transformSentenceToPOS(filtered_question_string)
-			print(posed_question)
+			print("No answer found!")
+			pass
+			# #pos-tagging & stemming:
+			# print(filtered_question_string)
+			# posed_question = transformSentenceToPOS(filtered_question_string)
+			# print(posed_question)
 		print("\n\n")
 		question_counter += 1
+		print(documents[closest_documents_indexes[0]])
+		# break
 
 
 if __name__ == "__main__":
