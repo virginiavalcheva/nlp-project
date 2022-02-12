@@ -8,7 +8,7 @@ import pickle
 import re
 
 # CONSTANTS
-RULES_FILE = "rules/stem_rules_context_2_UTF-8.txt"
+RULES_FILE = "../resources/rules/stem_rules_context_2_UTF-8.txt"
 MIN_RULE_FREQ = 2
 MIN_WORD_LEN = 3
 
@@ -41,7 +41,7 @@ def fetchTheRules(RULES_FILE, MIN_RULE_FREQ):
 		else:
 			continue
 
-	pickle.dump(StemmingRules, open('rules/StemmingRules-MinFreq-'+str(MIN_RULE_FREQ)+'.pickle', 'wb'))
+	pickle.dump(StemmingRules, open('../resources/rules/StemmingRules-MinFreq-'+str(MIN_RULE_FREQ)+'.pickle', 'wb'))
 	return StemmingRules
 
 def stem(word):
@@ -83,6 +83,6 @@ def stem(word):
 
 'Try to reload the rules or build them from the text files'
 try:
-	StemmingRules = pickle.load(open('rules/StemmingRules-MinFreq-'+str(MIN_RULE_FREQ)+'.pickle', 'rb'))
+	StemmingRules = pickle.load(open('../resources/rules/StemmingRules-MinFreq-'+str(MIN_RULE_FREQ)+'.pickle', 'rb'))
 except:
 	StemmingRules = fetchTheRules(RULES_FILE, MIN_RULE_FREQ)

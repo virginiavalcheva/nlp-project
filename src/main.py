@@ -63,7 +63,7 @@ def check_if_answer_appears_in_document_words(answer, document):
 	return answer in document
 
 if __name__ == "__main__":
-	f = io.open("IR_lecture_notes.txt", mode="r", encoding="utf-8")
+	f = io.open("../resources/IR_lecture_notes.txt", mode="r", encoding="utf-8")
 	s = f.read()
 
 	l = re.split(r'\b[0-9][0-9]?\s[а-яА-Я\s,]+\n', s)
