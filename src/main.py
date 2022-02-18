@@ -6,9 +6,13 @@ from nltk.tokenize import word_tokenize
 from tfidf import get_closest_documents_indexes
 from pos_tagger import transform_sentence_to_POS
 from searcher_in_doc import return_right_answer
-from constants import RESOURCE_FILENAME, QESTIONS_PATH_TO_FILE
+from constants import RESOURCE_FILENAME, QESTIONS_PATH_TO_FILE,\
+                      NUMBER_OF_GOOGLE_WEBPAGES_TO_BE_SEARCHED
 from bulstem import stem_word
 from metrics import find_precision
+from crawler import get_first_n_google_webpages_for_searched_string,\
+                    get_responce_text_paragraphs
+from termcolor import colored
 
 def get_stop_words():
     stop_words_file = open("../resources/bulgarianST.txt", "r", encoding="utf-8")
@@ -66,7 +70,6 @@ def read_questions_from_json():
 
 def main():
     resource_as_string = read_resource_from_file(RESOURCE_FILENAME)
-    documents = split_resource_in_documents_by_headings(resource_as_string)
     questions_data = read_questions_from_json()
     stop_words = get_stop_words()
 
@@ -75,28 +78,48 @@ def main():
     accuracy_sum = 0
     question_counter = 1
     for question in questions_data:
+        documents = split_resource_in_documents_by_headings(resource_as_string)
         answers = questions_data[question]
         print_question_with_answers(question, answers, question_counter)
         cleaned_question = clean_question(question)
         filtered_question_words = filter_question_words(cleaned_question, stop_words)
-        #question_words_stemmed = [stem_word(i) for i in filtered_question_words]
-        filtered_question_string = " ".join(filtered_question_words)
+        question_words_stemmed = [stem_word(i) for i in filtered_question_words]
+        filtered_question_string = " ".join(question_words_stemmed)
 
         closest_documents_indexes = get_closest_documents_indexes(documents, filtered_question_string)
 
         #find precision of tf-idf algorithm
         if question_counter <= 10: 
-        	metrics = find_precision(question_counter, closest_documents_indexes)
-        	precision_sum += metrics[0]
-        	recall_sum += metrics[1]
-        	accuracy_sum += metrics[2]
+            metrics = find_precision(question_counter, closest_documents_indexes)
+            precision_sum += metrics[0]
+            recall_sum += metrics[1]
+            accuracy_sum += metrics[2]
 
         # tfidf usage
         answer = find_answer_using_tfidf(documents, closest_documents_indexes, filtered_question_string, answers)
         if answer:
-            print(answer)
+            print(colored(answer, 'green'))
         else:
-            print("No answer found!")
+            print(colored("No answer found in the resource %s !" % RESOURCE_FILENAME, 'red'))
+            print("Let's crawl the web for answer!")
+            urls = get_first_n_google_webpages_for_searched_string(filtered_question_string)
+            is_answer_found_on_the_web = False
+            for url in urls:
+                documents = get_responce_text_paragraphs(url)
+                try:
+                    closest_documents_indexes = get_closest_documents_indexes(documents, filtered_question_string)
+                except ValueError:
+                    pass
+                else:
+                    # tfidf usage
+                    answer = find_answer_using_tfidf(documents, closest_documents_indexes, filtered_question_string,
+                                                     answers)
+                    if answer:
+                        print(colored(answer, 'green'))
+                        is_answer_found_on_the_web = True
+                        break
+            if not is_answer_found_on_the_web:
+                print(colored("No answer found in the first %s webpages on the Internet!" % NUMBER_OF_GOOGLE_WEBPAGES_TO_BE_SEARCHED, 'red'))
         print("\n")
         question_counter += 1
 

@@ -9,7 +9,7 @@ def get_similarity_score(query, vectorizer, train_corpus_vectors, top_n=12):
     # return tuples of (similarity score, document id)
     return [(similarities[idx], idx) for idx in related_docs_indices]
 
-def get_closest_documents_indexes(documents, query):
+def get_closest_documents_indexes(documents, query, top_n=12):
     tfidf_vectorizer = TfidfVectorizer(min_df=2)
 
     #fit goes through the provided documents and collects the vocabulary

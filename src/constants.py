@@ -8,3 +8,4 @@ MIN_RULE_FREQUENCY = 2
 MIN_WORD_LENGTH = 3
 BG_VOWELS = re.compile(u"[аъоуеияю]")
 STEMMING_RULES_MIN_FREQ = "../resources/rules/StemmingRules-MinFreq-"
+NUMBER_OF_GOOGLE_WEBPAGES_TO_BE_SEARCHED = 5

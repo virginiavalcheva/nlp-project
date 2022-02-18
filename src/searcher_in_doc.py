@@ -43,7 +43,7 @@ def get_weight_from_indexed_sentences(element) :
 
 #sort a list based on the weight parameter in the tuple     
 def sort_sentences_by_weight(elements):
-    elements.sort(key=get_weight_from_indexed_sentences, reverse = True)
+    elements.sort(key=get_weight_from_indexed_sentences, reverse=True)
     return elements  
 
 #(0,8)->0
@@ -82,9 +82,9 @@ def return_right_answer(answers, file_content, pos_tagged_sentence) :
     sentences = split_text(file_content)
     sentences_weight = get_sentences_weight(sentences, sorted_tuples)
     sorted_sentences = sort_sentences_by_weight(sentences_weight)
-    for sentence_pair in sorted_sentences :
+    for sentence_pair in sorted_sentences:
         sentence_index = get_sentence_index(sentence_pair)
         sentence = sentences[sentence_index]
-        for answer in answers :
-            if(answer in sentence) :
+        for answer in answers:
+            if answer in sentence:
                 return answer
