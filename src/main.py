@@ -8,6 +8,7 @@ from pos_tagger import transform_sentence_to_POS
 from searcher_in_doc import return_right_answer
 from constants import RESOURCE_FILENAME, QESTIONS_PATH_TO_FILE
 from bulstem import stem_word
+from metrics import find_precision
 
 def get_stop_words():
     stop_words_file = open("../resources/bulgarianST.txt", "r", encoding="utf-8")
@@ -75,10 +76,14 @@ def main():
         print_question_with_answers(question, answers, question_counter)
         cleaned_question = clean_question(question)
         filtered_question_words = filter_question_words(cleaned_question, stop_words)
-        question_words_stemmed = [stem_word(i) for i in filtered_question_words]
-        filtered_question_string = " ".join(question_words_stemmed)
+        #question_words_stemmed = [stem_word(i) for i in filtered_question_words]
+        filtered_question_string = " ".join(filtered_question_words)
 
         closest_documents_indexes = get_closest_documents_indexes(documents, filtered_question_string)
+
+        #find precision of tf-idf algorithm
+        if question_counter <= 10: find_precision(question_counter, closest_documents_indexes)
+
         # tfidf usage
         answer = find_answer_using_tfidf(documents, closest_documents_indexes, filtered_question_string, answers)
         if answer:
