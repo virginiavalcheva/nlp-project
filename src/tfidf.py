@@ -1,7 +1,7 @@
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-def get_similarity_score(query, vectorizer, train_corpus_vectors, top_n=3):
+def get_similarity_score(query, vectorizer, train_corpus_vectors, top_n=12):
     # compute similarity to all sentences in the training corpus
     similarities = cosine_similarity(vectorizer.transform([query]), train_corpus_vectors).flatten()
     # get indexes of top n closest sentences
@@ -21,4 +21,4 @@ def get_closest_documents_indexes(documents, query):
     train_corpus_vectors = tfidf_vectorizer.transform(documents)
 
     closest_documents = get_similarity_score(query, tfidf_vectorizer, train_corpus_vectors)
-    return [i[1] for i in closest_documents]
+    return [i[1] for i in closest_documents if i[0] != 0]

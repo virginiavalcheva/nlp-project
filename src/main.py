@@ -70,6 +70,9 @@ def main():
     questions_data = read_questions_from_json()
     stop_words = get_stop_words()
 
+    precision_sum = 0
+    recall_sum = 0
+    accuracy_sum = 0
     question_counter = 1
     for question in questions_data:
         answers = questions_data[question]
@@ -82,7 +85,11 @@ def main():
         closest_documents_indexes = get_closest_documents_indexes(documents, filtered_question_string)
 
         #find precision of tf-idf algorithm
-        if question_counter <= 10: find_precision(question_counter, closest_documents_indexes)
+        if question_counter <= 10: 
+        	metrics = find_precision(question_counter, closest_documents_indexes)
+        	precision_sum += metrics[0]
+        	recall_sum += metrics[1]
+        	accuracy_sum += metrics[2]
 
         # tfidf usage
         answer = find_answer_using_tfidf(documents, closest_documents_indexes, filtered_question_string, answers)
@@ -92,6 +99,10 @@ def main():
             print("No answer found!")
         print("\n")
         question_counter += 1
+
+        print("Средна прецизност:", precision_sum / 10)
+        print("Средно връщане:", recall_sum / 10)
+        print("Средна точност:", accuracy_sum / 10)
 
 if __name__ == "__main__":
     main()
