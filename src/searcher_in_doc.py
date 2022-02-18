@@ -1,5 +1,6 @@
 import re
 from nltk.tokenize import word_tokenize
+from itertools import permutations
 from pos_tagger import get_words_from_tuples
 from pos_tagger import sort_by_weight
 from pos_tagger import transform_sentence_to_POS
@@ -18,7 +19,7 @@ def split_text(text):
  
 #get sentences weight 
 #[(1:indexed sentence, 8:weight)]
-#sorted_tuples [(),(),(alg,noun,3)]
+#sorted_tuples [('ЙАК',ponoun,3),('алгоритъм',noun,2)]
 def get_sentences_weight(sentences, sorted_tuples) :
     sentences_weight = []
     words_from_tuples = get_words_from_tuples(sorted_tuples)       
@@ -49,10 +50,35 @@ def sort_sentences_by_weight(elements):
 def get_sentence_index(sentence_pair):
     return sentence_pair[0]
     
+#generate n-gramms 
+#answer=най-близкия му съсед -> ['най-близкия му съсед','най-близкия съсед му','му най-близкия съсед'..]
+def generate_ngrams_from_answer(answer):
+    words_list = list(answer.split())
+    permute_sentence = permutations(words_list)
+    sentences=[]
+    for word in permute_sentence:
+        permute_list = list(word)
+        sentence = ""
+        for word_ in permute_list:
+            sentence = sentence + word_ + ' '
+        sentences.append(sentence)
+    return sentences
+
+#remove commas and full stops from asnwers 
+#permutate all word in answer
+def answers_preprocessing(answers) :
+    n_gramms_for_answers = []
+    for answer in answers :
+        answer = answer.replace(".", "")
+        answer = answer.replace(",", "")
+        ngramms = generate_ngrams_from_answer(answer)
+        n_gramms_for_answers.append(ngramms)
+    return n_gramms_for_answers
+
 #return the right answer
 def return_right_answer(answers, file_content, pos_tagged_sentence) :
+    answers_preprocessing(answers)
     sorted_tuples = sort_by_weight(pos_tagged_sentence)
-   # file_content = get_file_content(file_name)
     sentences = split_text(file_content)
     sentences_weight = get_sentences_weight(sentences, sorted_tuples)
     sorted_sentences = sort_sentences_by_weight(sentences_weight)
@@ -62,5 +88,3 @@ def return_right_answer(answers, file_content, pos_tagged_sentence) :
         for answer in answers :
             if(answer in sentence) :
                 return answer
-    
-
